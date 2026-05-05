@@ -1,0 +1,63 @@
+# Ask The Oracles — Cursor Rules
+
+## Project Overview
+Multi-LLM query interface. User types a question, all configured LLMs respond in parallel, then a Judge synthesizes all responses into a final recommendation.
+
+## Stack
+- React 18 + Vite
+- Vanilla CSS (no Tailwind, no UI library)
+- API SDKs: openai, @anthropic-ai/sdk, @google/generative-ai
+- Mistral and Perplexity via fetch (REST)
+- All keys via VITE_ env vars in .env
+
+## File Structure
+```
+src/
+  components/
+    QueryBox.jsx         # Top input + Ask The Oracles button
+    OracleCard.jsx       # Per-LLM card (logo, model picker, response, copy btn)
+    OracleGrid.jsx       # Flex/grid layout for all oracle cards
+    JudgePanel.jsx       # Synthesis panel that slides in between query and oracles
+  hooks/
+    useOracles.js        # Orchestrates parallel API calls, state mgmt
+    useJudge.js          # Anthropic judge call
+  utils/
+    api.js               # All LLM API call functions
+    models.js            # Model configs per provider
+  App.jsx
+  main.jsx
+  index.css
+```
+
+## Coding Conventions
+- Functional components only, hooks for all logic
+- No class components
+- CSS variables for all colors/spacing (defined in index.css :root)
+- No inline styles except for dynamic/JS-driven values
+- All API calls in utils/api.js only — no fetch/SDK calls in components
+- Parallel API calls via Promise.allSettled (never sequential)
+- Error states per-oracle, not global
+
+## Key Behaviors
+- "Ask The Oracles" triggers all enabled LLMs simultaneously
+- Each oracle card animates in from the left, shows a skeleton loader
+- Copy button appears only when that oracle's response is complete
+- "Judge & Sync" button appears only after ALL oracles have resolved (success or error)
+- Judge panel slides in above oracle grid, pushing it down
+- Max page width: 1280px, centered
+
+## Env Vars
+All prefixed with VITE_ for Vite client exposure:
+- VITE_OPENAI_API_KEY
+- VITE_ANTHROPIC_API_KEY
+- VITE_GROK_API_KEY
+- VITE_GEMINI_API_KEY
+- VITE_MISTRAL_API_KEY
+- VITE_PERPLEXITY_API_KEY
+
+## Do Not
+- Do not use any CSS framework
+- Do not use React Router (single page)
+- Do not store responses in localStorage
+- Do not make API calls server-side (all client-side for local dev)
+- Do not use default exports for utils — named exports only
