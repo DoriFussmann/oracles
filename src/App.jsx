@@ -31,17 +31,6 @@ export default function App() {
   return (
     <div className="app">
       <div className="app-inner">
-        {/* Header */}
-        <header className="app-header">
-          <div className="app-logo">
-            <span className="app-logo-glyph">◈</span>
-          </div>
-          <div className="app-title-group">
-            <h1 className="app-title">Ask The Oracles</h1>
-            <p className="app-subtitle">Multi-model intelligence. One question. The Judge decides.</p>
-          </div>
-        </header>
-
         {/* Query Box */}
         <QueryBox
           onAsk={handleAsk}

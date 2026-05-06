@@ -25,7 +25,7 @@ export function QueryBox({ onAsk, isRunning, onReset }) {
         value={question}
         onChange={e => setQuestion(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask anything. The Oracles will deliberate."
+        placeholder="Ask anything. The Oracles will convene."
         rows={3}
         disabled={isRunning}
       />

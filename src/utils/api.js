@@ -3,6 +3,7 @@ export async function callOpenAI(question, model) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
   if (!apiKey) throw new Error('VITE_OPENAI_API_KEY not set in .env')
 
+  const startTime = Date.now()
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -15,12 +16,19 @@ export async function callOpenAI(question, model) {
       max_tokens: 1000,
     }),
   })
+  const ttft = Date.now() - startTime
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err?.error?.message || `OpenAI error ${res.status}`)
   }
   const data = await res.json()
-  return data.choices[0].message.content
+  return {
+    text: data.choices[0].message.content,
+    inputTokens: data.usage?.prompt_tokens ?? null,
+    outputTokens: data.usage?.completion_tokens ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Anthropic ───────────────────────────────────────────────────────────────
@@ -28,6 +36,7 @@ export async function callAnthropic(question, model) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY not set in .env')
 
+  const startTime = Date.now()
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -42,12 +51,19 @@ export async function callAnthropic(question, model) {
       messages: [{ role: 'user', content: question }],
     }),
   })
+  const ttft = Date.now() - startTime
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err?.error?.message || `Anthropic error ${res.status}`)
   }
   const data = await res.json()
-  return data.content[0].text
+  return {
+    text: data.content[0].text,
+    inputTokens: data.usage?.input_tokens ?? null,
+    outputTokens: data.usage?.output_tokens ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Grok (xAI — OpenAI-compatible) ──────────────────────────────────────────
@@ -55,6 +71,7 @@ export async function callGrok(question, model) {
   const apiKey = import.meta.env.VITE_GROK_API_KEY
   if (!apiKey) throw new Error('VITE_GROK_API_KEY not set in .env')
 
+  const startTime = Date.now()
   const res = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -67,21 +84,26 @@ export async function callGrok(question, model) {
       max_tokens: 1000,
     }),
   })
+  const ttft = Date.now() - startTime
   if (!res.ok) {
     const raw = await res.text().catch(() => '')
     let message = ''
-
     try {
       const parsed = JSON.parse(raw)
       message = parsed?.error?.message || parsed?.message || ''
     } catch {
       message = raw.trim()
     }
-
     throw new Error(message || `Grok error ${res.status}`)
   }
   const data = await res.json()
-  return data.choices[0].message.content
+  return {
+    text: data.choices[0].message.content,
+    inputTokens: data.usage?.prompt_tokens ?? null,
+    outputTokens: data.usage?.completion_tokens ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Google Gemini ───────────────────────────────────────────────────────────
@@ -94,6 +116,8 @@ export async function callGemini(question, model) {
     contents: [{ parts: [{ text: question }] }],
     generationConfig: { maxOutputTokens: 1000 },
   }
+
+  const startTime = Date.now()
 
   const callGeminiVersion = async (version) => fetch(
     `https://generativelanguage.googleapis.com/${version}/${modelPath}:generateContent?key=${apiKey}`,
@@ -112,6 +136,7 @@ export async function callGemini(question, model) {
       res = await callGeminiVersion('v1beta')
     }
   }
+  const ttft = Date.now() - startTime
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -119,7 +144,13 @@ export async function callGemini(question, model) {
   }
 
   const data = await res.json()
-  return data.candidates[0].content.parts[0].text
+  return {
+    text: data.candidates[0].content.parts[0].text,
+    inputTokens: data.usageMetadata?.promptTokenCount ?? null,
+    outputTokens: data.usageMetadata?.candidatesTokenCount ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Mistral ─────────────────────────────────────────────────────────────────
@@ -127,6 +158,7 @@ export async function callMistral(question, model) {
   const apiKey = import.meta.env.VITE_MISTRAL_API_KEY
   if (!apiKey) throw new Error('VITE_MISTRAL_API_KEY not set in .env')
 
+  const startTime = Date.now()
   const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -139,12 +171,19 @@ export async function callMistral(question, model) {
       max_tokens: 1000,
     }),
   })
+  const ttft = Date.now() - startTime
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err?.error?.message || `Mistral error ${res.status}`)
   }
   const data = await res.json()
-  return data.choices[0].message.content
+  return {
+    text: data.choices[0].message.content,
+    inputTokens: data.usage?.prompt_tokens ?? null,
+    outputTokens: data.usage?.completion_tokens ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Perplexity ───────────────────────────────────────────────────────────────
@@ -152,6 +191,7 @@ export async function callPerplexity(question, model) {
   const apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY
   if (!apiKey) throw new Error('VITE_PERPLEXITY_API_KEY not set in .env')
 
+  const startTime = Date.now()
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -164,12 +204,19 @@ export async function callPerplexity(question, model) {
       max_tokens: 1000,
     }),
   })
+  const ttft = Date.now() - startTime
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err?.error?.message || `Perplexity error ${res.status}`)
   }
   const data = await res.json()
-  return data.choices[0].message.content
+  return {
+    text: data.choices[0].message.content,
+    inputTokens: data.usage?.prompt_tokens ?? null,
+    outputTokens: data.usage?.completion_tokens ?? null,
+    totalTime: Date.now() - startTime,
+    ttft,
+  }
 }
 
 // ─── Router ──────────────────────────────────────────────────────────────────

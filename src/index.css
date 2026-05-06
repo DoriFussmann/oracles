@@ -3,24 +3,24 @@
 
 /* ─── Variables ──────────────────────────────────────────────────────────────── */
 :root {
-  --bg:          #f5f5f7;
+  --bg:          #f4f6f8;
   --bg-card:     #ffffff;
-  --bg-card-2:   #f7f7fb;
-  --border:      #d9d9e3;
-  --border-glow: #c9c9d8;
-  --text-primary:   #0a0a0f;
-  --text-secondary: #5a5a7a;
-  --text-muted:     #aaaacc;
-  --accent:      #b8a9ff;
-  --accent-dim:  #4a3f80;
+  --bg-card-2:   #f0f5f7;
+  --border:      #d4dde4;
+  --border-glow: #b2ccd6;
+  --text-primary:   #09111a;
+  --text-secondary: #4a6070;
+  --text-muted:     #8fa8b8;
+  --accent:      #22d3ee;
+  --accent-dim:  #155e75;
   --judge-gold:  #e8c86a;
   --judge-gold-dim: #4a3e20;
-  --success:     #4ade80;
+  --success:     #34d399;
   --error:       #f87171;
   --radius:      12px;
   --radius-sm:   8px;
-  --shadow:      0 2px 10px rgba(20, 20, 40, 0.08);
-  --shadow-lg:   0 8px 28px rgba(20, 20, 40, 0.12);
+  --shadow:      0 2px 10px rgba(10, 25, 40, 0.07);
+  --shadow-lg:   0 8px 28px rgba(10, 25, 40, 0.11);
   --max-width:   1280px;
   --transition:  all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -57,12 +57,13 @@ body::before {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  padding: 40px 24px 80px;
+  padding: 40px 0 80px;
 }
 
 .app-inner {
   max-width: var(--max-width);
   margin: 0 auto;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -81,8 +82,8 @@ body::before {
 .app-logo {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--accent-dim), #1a1030);
-  border: 1px solid var(--accent-dim);
+  background: linear-gradient(135deg, var(--accent-dim), #083344);
+  border: 1px solid rgba(34, 211, 238, 0.25);
   border-radius: var(--radius);
   display: flex;
   align-items: center;
@@ -127,8 +128,8 @@ body::before {
 }
 
 .query-box:focus-within {
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 0 1px var(--accent-dim), var(--shadow);
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2), var(--shadow);
 }
 
 .query-header {
@@ -188,8 +189,8 @@ body::before {
 
 /* ─── Buttons ────────────────────────────────────────────────────────────────── */
 .btn-ask {
-  background: linear-gradient(135deg, #4a3f80, #6b5fcf);
-  border: 1px solid var(--accent-dim);
+  background: linear-gradient(135deg, #155e75, #0891b2);
+  border: 1px solid rgba(34, 211, 238, 0.3);
   color: #fff;
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
@@ -203,8 +204,8 @@ body::before {
 }
 
 .btn-ask:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5a4f90, #7b6fdf);
-  box-shadow: 0 0 24px rgba(107, 95, 207, 0.4);
+  background: linear-gradient(135deg, #1c7a90, #06b6d4);
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.35);
   transform: translateY(-1px);
 }
 
@@ -441,8 +442,8 @@ body::before {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   display: grid;
-  grid-template-columns: 25% 75%;
-  height: 280px;
+  grid-template-columns: 22% 78%;
+  height: 230px;
   overflow: hidden;
   transition: var(--transition);
   position: relative;
@@ -464,32 +465,38 @@ body::before {
 
 .oracle-card--loading {
   border-color: var(--border-glow);
-  animation: slideInLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: cardReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .oracle-card--success {
   border-color: var(--border-glow);
-  animation: slideInLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: cardReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .oracle-card--error {
   border-color: rgba(248,113,113,0.2);
-  animation: slideInLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: cardReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .oracle-card__left {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-  padding: 16px 20px;
   border-right: 1px solid var(--border);
   background: var(--bg-card-2);
 }
 
+.oracle-logo-well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  flex: 0 0 72px;
+  border-bottom: 1px solid var(--border);
+}
+
 .oracle-logo {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
 }
 
@@ -499,48 +506,52 @@ body::before {
 }
 
 .oracle-meta {
-  width: 100%;
+  flex: 1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 0;
 }
 
 .oracle-name {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--text-primary);
   line-height: 1.2;
-  margin-bottom: 6px;
 }
 
 .oracle-model-select {
   background: var(--bg-card);
   border: 1px solid var(--border);
   outline: none;
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   color: var(--text-secondary);
   font-family: 'Inter', sans-serif;
-  font-size: 0.74rem;
-  letter-spacing: 0.02em;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  padding: 8px 34px 8px 10px;
-  margin-top: 0;
+  padding: 6px 26px 6px 8px;
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%235a5a7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M5 7l5 6l5-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%234a6070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M5 7l5 6l5-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
+  background-position: right 8px center;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .oracle-model-select:hover:not(:disabled) {
-  border-color: var(--accent-dim);
-  background-color: #fcfcff;
+  border-color: rgba(34, 211, 238, 0.4);
+  background-color: #f8fbfc;
 }
 
 .oracle-model-select:focus-visible {
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 0 2px rgba(184, 169, 255, 0.2);
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.12);
 }
 
 .oracle-model-select option {
@@ -554,12 +565,12 @@ body::before {
 }
 
 .oracle-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
   background: var(--text-muted);
-  transition: background 0.3s ease;
+  transition: background 0.4s ease;
   align-self: flex-start;
 }
 
@@ -584,9 +595,16 @@ body::before {
 
 .oracle-card__body {
   flex: 1;
-  padding: 20px;
   overflow: hidden;
   min-height: 0;
+  display: flex;
+}
+
+.oracle-body-main {
+  flex: 1;
+  padding: 16px 16px 16px 18px;
+  overflow: hidden;
+  min-width: 0;
   display: flex;
 }
 
@@ -624,6 +642,7 @@ body::before {
   overflow-y: auto;
   height: 100%;
   width: 100%;
+  animation: morphIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .oracle-response::-webkit-scrollbar { width: 4px; }
@@ -639,6 +658,51 @@ body::before {
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Metrics Panel */
+.oracle-metrics {
+  width: 210px;
+  flex-shrink: 0;
+  padding: 8px 10px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.oracle-metric-card {
+  flex: 1;
+  background: rgba(9, 17, 26, 0.03);
+  border: 1px solid rgba(9, 17, 26, 0.06);
+  border-radius: 6px;
+  padding: 0 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: metricFadeIn 0.3s ease var(--metric-delay, 0ms) both;
+}
+
+.oracle-metric-label {
+  font-size: 0.57rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.oracle-metric-value {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
 }
 
 /* Error */
@@ -662,13 +726,13 @@ body::before {
 }
 
 .oracle-card__footer {
-  padding: 12px 20px;
+  padding: 9px 16px;
   border-top: 1px solid var(--border);
   display: flex;
   gap: 10px;
   justify-content: flex-end;
   background: var(--bg-card-2);
-  animation: fadeIn 0.3s ease both;
+  animation: morphIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .btn-expand {
@@ -733,12 +797,24 @@ body::before {
 @media (max-width: 900px) {
   .oracle-card {
     grid-template-columns: 1fr;
-    height: 360px;
+    height: auto;
+    min-height: 280px;
   }
 
   .oracle-card__left {
+    flex-direction: row;
     border-right: none;
     border-bottom: 1px solid var(--border);
+  }
+
+  .oracle-logo-well {
+    flex: 0 0 72px;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+  }
+
+  .oracle-metrics {
+    width: 190px;
   }
 
   .oracle-modal {
@@ -781,19 +857,27 @@ body::before {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--accent-dim);
-  background: linear-gradient(135deg, var(--accent-dim), #1a1030);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: linear-gradient(135deg, #155e75, #083344);
   color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  flex-shrink: 0;
+}
+
+.site-brand__logo svg {
+  width: 18px;
+  height: 18px;
 }
 
 .site-brand__name {
   color: var(--text-primary);
   text-decoration: none;
   font-size: 1rem;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
   letter-spacing: 0.01em;
 }
 
@@ -886,12 +970,13 @@ body::before {
 }
 
 .site-page {
-  padding: 40px 24px 80px;
+  padding: 40px 0 80px;
 }
 
 .site-page__inner {
   max-width: var(--max-width);
   margin: 0 auto;
+  padding: 0 24px;
 }
 
 .site-page__title {
@@ -993,6 +1078,29 @@ body::before {
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-24px); }
   to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes metricFadeIn {
+  from { opacity: 0;    transform: translateY(8px); }
+  to   { opacity: 0.92; transform: translateY(0); }
+}
+
+@keyframes morphIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
 
 @keyframes shimmer {

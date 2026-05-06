@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { callOracle } from '../utils/api'
-import { ORACLE_CONFIGS } from '../utils/models'
+import { ORACLE_CONFIGS, calculateCost } from '../utils/models'
 
 const initialState = () =>
   ORACLE_CONFIGS.reduce((acc, o) => {
@@ -10,6 +10,7 @@ const initialState = () =>
       error: '',
       model: o.defaultModel,
       enabled: true,
+      metrics: null,
     }
     return acc
   }, {})
@@ -32,7 +33,7 @@ export function useOracles() {
       const next = { ...prev }
       ORACLE_CONFIGS.forEach(o => {
         if (next[o.id].enabled) {
-          next[o.id] = { ...next[o.id], status: 'loading', text: '', error: '' }
+          next[o.id] = { ...next[o.id], status: 'loading', text: '', error: '', metrics: null }
         }
       })
       return next
@@ -46,10 +47,23 @@ export function useOracles() {
       enabled.map(async (oracle) => {
         const model = oracles[oracle.id].model
         try {
-          const text = await callOracle(oracle.id, question, model)
+          const result = await callOracle(oracle.id, question, model)
+          const cost = calculateCost(model, result.inputTokens, result.outputTokens)
           setOracles(prev => ({
             ...prev,
-            [oracle.id]: { ...prev[oracle.id], status: 'success', text },
+            [oracle.id]: {
+              ...prev[oracle.id],
+              status: 'success',
+              text: result.text,
+              metrics: {
+                inputTokens: result.inputTokens,
+                outputTokens: result.outputTokens,
+                totalTime: result.totalTime,
+                ttft: result.ttft,
+                cost,
+                model,
+              },
+            },
           }))
         } catch (err) {
           setOracles(prev => ({

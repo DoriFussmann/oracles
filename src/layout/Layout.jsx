@@ -12,7 +12,18 @@ export function Layout() {
       <header className="site-header">
         <div className="site-header__inner">
           <div className="site-brand">
-            <div className="site-brand__logo" aria-hidden="true">◈</div>
+            <div className="site-brand__logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 18 Q3 12 4 5 L10 12"/>
+                <path d="M20 18 Q21 12 20 5 L14 12"/>
+                <path d="M4 18 Q5 23 12 23 Q19 23 20 18"/>
+                <path d="M7 17.5 Q9 15.5 10.5 17"/>
+                <path d="M13.5 17 Q15 15.5 17 17.5"/>
+                <circle cx="9.5" cy="15" r="0.9" fill="currentColor" stroke="none"/>
+                <circle cx="14.5" cy="15" r="0.9" fill="currentColor" stroke="none"/>
+                <path d="M10.5 20 Q12 21.5 13.5 20"/>
+              </svg>
+            </div>
             <Link to="/" className="site-brand__name">The AI Oracles</Link>
           </div>
 
