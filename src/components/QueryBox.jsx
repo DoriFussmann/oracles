@@ -6,51 +6,42 @@ export function QueryBox({ onAsk, isRunning, onReset }) {
   const handleSubmit = () => {
     if (!question.trim() || isRunning) return
     onAsk(question.trim())
+    setQuestion('') // clear input after sending, to feel like chat
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
       handleSubmit()
     }
   }
 
   return (
-    <div className="query-box">
-      <div className="query-header">
-        <span className="query-label">YOUR QUESTION</span>
-        <span className="query-hint">⌘ + Enter to send</span>
-      </div>
+    <div className="query-box-minimal">
       <textarea
-        className="query-textarea"
+        className="query-input"
         value={question}
         onChange={e => setQuestion(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask anything. The Oracles will convene."
-        rows={3}
+        placeholder="Ask the oracles..."
+        rows={1}
         disabled={isRunning}
       />
-      <div className="query-actions">
-        <button
-          className="btn-reset"
-          onClick={() => { setQuestion(''); onReset() }}
-          disabled={isRunning}
-        >
-          Clear
-        </button>
-        <button
-          className="btn-ask"
-          onClick={handleSubmit}
-          disabled={!question.trim() || isRunning}
-        >
-          {isRunning ? (
-            <span className="btn-loading">
-              <span className="spinner" />
-              Consulting Oracles…
-            </span>
-          ) : (
-            'Ask The Oracles'
-          )}
-        </button>
+      <div className="query-actions-minimal">
+        {isRunning ? (
+          <div className="minimal-spinner" />
+        ) : (
+          <button
+            className="btn-send-minimal"
+            onClick={handleSubmit}
+            disabled={!question.trim() || isRunning}
+            title="Send"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   )

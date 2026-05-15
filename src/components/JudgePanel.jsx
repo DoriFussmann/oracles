@@ -1,47 +1,11 @@
 import { useState } from 'react'
 
-function renderJudgeText(text) {
-  // Split into sections and render with basic markdown-ish formatting
-  const lines = text.split('\n')
-  return lines.map((line, i) => {
-    if (line.startsWith('## ')) {
-      return <h3 key={i} className="judge-section-title">{line.replace('## ', '')}</h3>
-    }
-    if (line.startsWith('• ')) {
-      const content = line.replace('• ', '')
-      // Bold **text**
-      const parts = content.split(/(\*\*[^*]+\*\*)/)
-      return (
-        <div key={i} className="judge-bullet">
-          <span className="judge-bullet-dot">•</span>
-          <span>
-            {parts.map((p, j) =>
-              p.startsWith('**') && p.endsWith('**')
-                ? <strong key={j}>{p.slice(2, -2)}</strong>
-                : p
-            )}
-          </span>
-        </div>
-      )
-    }
-    if (line.trim() === '') return <div key={i} className="judge-spacer" />
-    const parts = line.split(/(\*\*[^*]+\*\*)/)
-    return (
-      <p key={i} className="judge-para">
-        {parts.map((p, j) =>
-          p.startsWith('**') && p.endsWith('**')
-            ? <strong key={j}>{p.slice(2, -2)}</strong>
-            : p
-        )}
-      </p>
-    )
-  })
-}
-
 export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudge }) {
+  const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = async () => {
+  const handleCopy = async (e) => {
+    e.stopPropagation()
     await navigator.clipboard.writeText(judgeText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -49,47 +13,75 @@ export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudg
 
   if (!allDone && judgeStatus === 'idle') return null
 
+  // Parse the summary and draft
+  let summaryNodes = []
+  let draftNodes = []
+
+  if (judgeText) {
+    const lines = judgeText.split('\n')
+    let mode = 'summary' // 'summary' or 'draft'
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      if (line.startsWith('## Synthesis Draft')) {
+        mode = 'draft'
+        continue
+      }
+      if (line.startsWith('## Model Summaries')) {
+        continue
+      }
+
+      const cleanLine = line.replace(/\*\*/g, '') // remove bolding for cleaner look
+      
+      if (mode === 'summary' && cleanLine.trim() !== '') {
+        summaryNodes.push(<div key={i} className="synthesizer-summary-item">{cleanLine}</div>)
+      } else if (mode === 'draft' && line.trim() !== '') {
+        draftNodes.push(<p key={i} className="synthesizer-para">{cleanLine}</p>)
+      }
+    }
+  }
+
   return (
-    <div className={`judge-panel judge-panel--${judgeStatus}`}>
-      <div className="judge-panel__header">
-        <div className="judge-icon">⚖</div>
-        <div className="judge-title-group">
-          <span className="judge-label">THE JUDGE</span>
-          <span className="judge-subtitle">Anthropic · Synthesis Engine</span>
+    <div className={`oracle-panel oracle-panel--${judgeStatus} ${expanded ? 'expanded' : ''} synthesizer-theme`}>
+      <div className="oracle-panel-header" onClick={() => judgeStatus === 'success' && setExpanded(!expanded)}>
+        <div className="oracle-panel-title">
+          <div className="synthesizer-icon-minimal">✦</div>
+          <span className="oracle-name">Working Draft Synthesis</span>
+          <div className={`oracle-status-dot oracle-status-dot--${judgeStatus}`} />
         </div>
-        {judgeStatus === 'idle' && allDone && (
-          <button className="btn-judge" onClick={onJudge}>
-            Judge &amp; Sync
-          </button>
-        )}
+
         {judgeStatus === 'success' && (
-          <button className="btn-copy btn-copy--judge" onClick={handleCopy}>
-            {copied ? '✓ Copied' : 'Copy'}
-          </button>
+          <div className="oracle-summary synthesizer-summary-container">
+            {summaryNodes}
+          </div>
+        )}
+
+        {judgeStatus === 'loading' && (
+          <div className="oracle-summary oracle-summary--loading">
+            <span className="typing-dot">.</span><span className="typing-dot">.</span><span className="typing-dot">.</span> Synthesizing consensus
+          </div>
+        )}
+
+        {judgeStatus === 'error' && (
+          <div className="oracle-summary oracle-summary--error">
+            {judgeError}
+          </div>
         )}
       </div>
 
-      {judgeStatus === 'loading' && (
-        <div className="judge-loading">
-          <div className="judge-skeleton-line" style={{ width: '85%' }} />
-          <div className="judge-skeleton-line" style={{ width: '65%' }} />
-          <div className="judge-skeleton-line" style={{ width: '90%' }} />
-          <div className="judge-skeleton-line" style={{ width: '75%' }} />
-          <div className="judge-skeleton-line" style={{ width: '55%' }} />
-          <div className="judge-skeleton-line" style={{ width: '80%' }} />
-        </div>
-      )}
-
-      {judgeStatus === 'success' && (
-        <div className="judge-content">
-          {renderJudgeText(judgeText)}
-        </div>
-      )}
-
-      {judgeStatus === 'error' && (
-        <div className="judge-error">
-          <span className="oracle-error-icon">⚠</span>
-          <p>{judgeError}</p>
+      {expanded && judgeStatus === 'success' && (
+        <div className="oracle-panel-body">
+          <div className="conversation-history">
+            <div className="chat-bubble chat-bubble--assistant synthesizer-draft-bubble">
+              {draftNodes}
+            </div>
+          </div>
+          <div className="oracle-metrics-inline" style={{ justifyContent: 'space-between' }}>
+            <span>Synthesized from all oracles</span>
+            <button className="btn-minimal" onClick={handleCopy}>
+              {copied ? '✓ Copied' : 'Copy Draft'}
+            </button>
+          </div>
         </div>
       )}
     </div>

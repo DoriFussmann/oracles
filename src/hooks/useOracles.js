@@ -6,7 +6,7 @@ const initialState = () =>
   ORACLE_CONFIGS.reduce((acc, o) => {
     acc[o.id] = {
       status: 'idle', // idle | loading | success | error
-      text: '',
+      messages: [],
       error: '',
       model: o.defaultModel,
       enabled: true,
@@ -28,33 +28,43 @@ export function useOracles() {
   }, [])
 
   const askAll = useCallback(async (question) => {
-    // Reset all enabled oracles to loading
+    // Reset all enabled oracles to loading, append user message
     setOracles(prev => {
       const next = { ...prev }
       ORACLE_CONFIGS.forEach(o => {
         if (next[o.id].enabled) {
-          next[o.id] = { ...next[o.id], status: 'loading', text: '', error: '', metrics: null }
+          next[o.id] = { 
+            ...next[o.id], 
+            status: 'loading', 
+            error: '', 
+            metrics: null,
+            messages: [...next[o.id].messages, { role: 'user', content: question }]
+          }
         }
       })
       return next
     })
     setIsRunning(true)
 
+    // Fire all in parallel
     const enabled = ORACLE_CONFIGS.filter(o => oracles[o.id].enabled)
 
-    // Fire all in parallel, update each as it resolves
     await Promise.allSettled(
       enabled.map(async (oracle) => {
+        // We capture the state values before the await
         const model = oracles[oracle.id].model
+        const messageHistory = [...oracles[oracle.id].messages, { role: 'user', content: question }]
+        
         try {
-          const result = await callOracle(oracle.id, question, model)
+          const result = await callOracle(oracle.id, messageHistory, model)
           const cost = calculateCost(model, result.inputTokens, result.outputTokens)
+          
           setOracles(prev => ({
             ...prev,
             [oracle.id]: {
               ...prev[oracle.id],
               status: 'success',
-              text: result.text,
+              messages: [...prev[oracle.id].messages, { role: 'assistant', content: result.text }],
               metrics: {
                 inputTokens: result.inputTokens,
                 outputTokens: result.outputTokens,
@@ -92,14 +102,18 @@ export function useOracles() {
       o => oracles[o.id].status === 'success' || oracles[o.id].status === 'error'
     )
 
-  const responses = ORACLE_CONFIGS.filter(o => oracles[o.id].enabled).map(o => ({
-    id: o.id,
-    name: o.name,
-    model: oracles[o.id].model,
-    status: oracles[o.id].status,
-    text: oracles[o.id].text,
-    error: oracles[o.id].error,
-  }))
+  const responses = ORACLE_CONFIGS.filter(o => oracles[o.id].enabled).map(o => {
+    const msgs = oracles[o.id].messages;
+    const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+    return {
+      id: o.id,
+      name: o.name,
+      model: oracles[o.id].model,
+      status: oracles[o.id].status,
+      text: lastMsg?.role === 'assistant' ? lastMsg.content : '',
+      error: oracles[o.id].error,
+    }
+  })
 
   return { oracles, isRunning, allDone, responses, askAll, reset, setModel, toggleEnabled }
 }

@@ -1,5 +1,16 @@
+const SYSTEM_PROMPT = `You are a helpful AI assistant in a multi-model comparison tool.
+You MUST begin your response with a <summary> tag containing exactly 1-3 short bullet points summarizing your answer.
+Then, provide your full response outside and below the <summary> tag.
+
+Example format:
+<summary>
+• Point 1
+• Point 2
+</summary>
+Your full answer here...`
+
 // ─── OpenAI ──────────────────────────────────────────────────────────────────
-export async function callOpenAI(question, model) {
+export async function callOpenAI(messages, model) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY
   if (!apiKey) throw new Error('VITE_OPENAI_API_KEY not set in .env')
 
@@ -12,7 +23,7 @@ export async function callOpenAI(question, model) {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: question }],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1000,
     }),
   })
@@ -32,7 +43,7 @@ export async function callOpenAI(question, model) {
 }
 
 // ─── Anthropic ───────────────────────────────────────────────────────────────
-export async function callAnthropic(question, model) {
+export async function callAnthropic(messages, model) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY not set in .env')
 
@@ -48,7 +59,8 @@ export async function callAnthropic(question, model) {
     body: JSON.stringify({
       model,
       max_tokens: 1000,
-      messages: [{ role: 'user', content: question }],
+      system: SYSTEM_PROMPT,
+      messages,
     }),
   })
   const ttft = Date.now() - startTime
@@ -67,7 +79,7 @@ export async function callAnthropic(question, model) {
 }
 
 // ─── Grok (xAI — OpenAI-compatible) ──────────────────────────────────────────
-export async function callGrok(question, model) {
+export async function callGrok(messages, model) {
   const apiKey = import.meta.env.VITE_GROK_API_KEY
   if (!apiKey) throw new Error('VITE_GROK_API_KEY not set in .env')
 
@@ -80,7 +92,7 @@ export async function callGrok(question, model) {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: question }],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1000,
     }),
   })
@@ -107,13 +119,20 @@ export async function callGrok(question, model) {
 }
 
 // ─── Google Gemini ───────────────────────────────────────────────────────────
-export async function callGemini(question, model) {
+export async function callGemini(messages, model) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY
   if (!apiKey) throw new Error('VITE_GEMINI_API_KEY not set in .env')
 
   const modelPath = model.startsWith('models/') ? model : `models/${model}`
+  
+  const geminiContents = messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }))
+
   const payload = {
-    contents: [{ parts: [{ text: question }] }],
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: geminiContents,
     generationConfig: { maxOutputTokens: 1000 },
   }
 
@@ -154,7 +173,7 @@ export async function callGemini(question, model) {
 }
 
 // ─── Mistral ─────────────────────────────────────────────────────────────────
-export async function callMistral(question, model) {
+export async function callMistral(messages, model) {
   const apiKey = import.meta.env.VITE_MISTRAL_API_KEY
   if (!apiKey) throw new Error('VITE_MISTRAL_API_KEY not set in .env')
 
@@ -167,7 +186,7 @@ export async function callMistral(question, model) {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: question }],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1000,
     }),
   })
@@ -187,7 +206,7 @@ export async function callMistral(question, model) {
 }
 
 // ─── Perplexity ───────────────────────────────────────────────────────────────
-export async function callPerplexity(question, model) {
+export async function callPerplexity(messages, model) {
   const apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY
   if (!apiKey) throw new Error('VITE_PERPLEXITY_API_KEY not set in .env')
 
@@ -200,7 +219,7 @@ export async function callPerplexity(question, model) {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: question }],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       max_tokens: 1000,
     }),
   })
@@ -220,53 +239,48 @@ export async function callPerplexity(question, model) {
 }
 
 // ─── Router ──────────────────────────────────────────────────────────────────
-export async function callOracle(providerId, question, model) {
+export async function callOracle(providerId, messages, model) {
   switch (providerId) {
-    case 'openai':      return callOpenAI(question, model)
-    case 'anthropic':   return callAnthropic(question, model)
-    case 'grok':        return callGrok(question, model)
-    case 'gemini':      return callGemini(question, model)
-    case 'mistral':     return callMistral(question, model)
-    case 'perplexity':  return callPerplexity(question, model)
+    case 'openai':      return callOpenAI(messages, model)
+    case 'anthropic':   return callAnthropic(messages, model)
+    case 'grok':        return callGrok(messages, model)
+    case 'gemini':      return callGemini(messages, model)
+    case 'mistral':     return callMistral(messages, model)
+    case 'perplexity':  return callPerplexity(messages, model)
     default: throw new Error(`Unknown provider: ${providerId}`)
   }
 }
 
-// ─── Judge (Anthropic) ───────────────────────────────────────────────────────
-export async function callJudge(question, responses) {
+// ─── Synthesizer (Formerly Judge) ────────────────────────────────────────────
+export async function callJudge(messages, responses) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-  if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY not set in .env (needed for Judge)')
+  if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY not set in .env')
+
+  const latestMessage = messages[messages.length - 1]?.content || ''
 
   const responsesText = responses
     .filter(r => r.status === 'success')
     .map(r => `### ${r.name} (${r.model})\n${r.text}`)
     .join('\n\n---\n\n')
 
-  const prompt = `You are The Judge. The user asked this question to multiple AI models:
+  const prompt = `You are a Synthesizer in a multi-model AI comparison tool. The user asked this question to multiple AI models:
 
-**QUESTION:** ${question}
+**LATEST QUESTION:** ${latestMessage}
 
-Here are all the responses:
+Here are all the responses from the different models:
 
 ${responsesText}
 
-Your task:
-1. Write a brief bullet-point summary of what each model said (1-2 bullets per model, lead with the model name in bold)
-2. Write a "Judge's Summary" section that:
-   - States the final recommendation/answer
-   - Notes which models influenced it and why
-   - Highlights any meaningful disagreements between models
-   - Is direct and decisive — no hedging
+Your task is to create a "Working Draft Synthesis" that aggregates the best points from all models into a single, cohesive answer that the user can use to continue the conversation.
 
 Format your response exactly like this:
 
-## What Each Oracle Said
-• **[Model Name]**: [their main point]
-• **[Model Name]**: [their main point]
-(etc.)
+## Model Summaries
+• **[Model Name]**: [1 short bullet point on their unique take]
+• **[Model Name]**: [1 short bullet point on their unique take]
 
-## Judge's Summary
-[Your synthesis and final recommendation. Be direct. State which models you weight most heavily and why.]`
+## Synthesis Draft
+[Your combined, finalized response that the user can take forward as the truth or working draft.]`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
