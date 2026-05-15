@@ -271,7 +271,7 @@ Here are all the responses from the different models:
 
 ${responsesText}
 
-Your task is to create a "Working Draft Synthesis" that aggregates the best points from all models into a single, cohesive answer that the user can use to continue the conversation.
+Your task is to create a "LLMs Summary" that aggregates the best points from all models into a single, cohesive answer that the user can use to continue the conversation.
 
 Format your response exactly like this:
 
@@ -279,7 +279,7 @@ Format your response exactly like this:
 • **[Model Name]**: [1 short bullet point on their unique take]
 • **[Model Name]**: [1 short bullet point on their unique take]
 
-## Synthesis Draft
+## Full Summary
 [Your combined, finalized response that the user can take forward as the truth or working draft.]`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {

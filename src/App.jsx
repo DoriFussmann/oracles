@@ -6,7 +6,7 @@ import { useOracles } from './hooks/useOracles'
 import { useJudge } from './hooks/useJudge'
 
 export default function App() {
-  const { oracles, isRunning, allDone, responses, askAll, reset, setModel } = useOracles()
+  const { oracles, isRunning, allDone, responses, askAll, reset, setModel, isolateOracle, baselineAll } = useOracles()
   const { judgeStatus, judgeText, judgeError, runJudge, resetJudge } = useJudge()
 
   const hasAnyActivity = Object.values(oracles).some(o => o.status !== 'idle')
@@ -25,6 +25,11 @@ export default function App() {
     const enabledOracles = Object.values(oracles).filter(o => o.enabled)
     const messages = enabledOracles.length > 0 ? enabledOracles[0].messages : []
     runJudge(messages, responses)
+  }
+
+  const handleBaseline = (draft) => {
+    baselineAll(draft)
+    resetJudge() // Hide synthesizer since we are sending it back as a message
   }
 
   // Auto-start synthesis when all oracles finish
@@ -61,12 +66,13 @@ export default function App() {
             judgeText={judgeText}
             judgeError={judgeError}
             onJudge={handleJudge}
+            onBaseline={handleBaseline}
           />
         </div>
 
         {/* 3. Oracle Grid (Bottom) */}
         <div className={`oracles-wrapper ${hasAnyActivity ? 'oracles-wrapper--active' : ''}`}>
-          <OracleGrid oracles={oracles} onModelChange={setModel} />
+          <OracleGrid oracles={oracles} onModelChange={setModel} onIsolate={isolateOracle} />
         </div>
       </div>
     </div>

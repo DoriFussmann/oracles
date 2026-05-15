@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { supabase } from '../utils/supabase'
 
 const CORE_ARTICLES = [
   { label: 'The Nature of Intelligence', to: '/articles/nature-of-intelligence' },
@@ -7,6 +9,37 @@ const CORE_ARTICLES = [
 ]
 
 export function Layout() {
+  const [session, setSession] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    })
+    if (error) console.error('Error logging in:', error.message)
+  }
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) console.error('Error logging out:', error.message)
+  }
+
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -47,8 +80,19 @@ export function Layout() {
           </nav>
 
           <div className="site-auth">
-            <button type="button" className="btn-reset">Log In</button>
-            <button type="button" className="btn-ask">Sign Up</button>
+            {session ? (
+              <>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  {session.user.email}
+                </span>
+                <button type="button" className="btn-reset" onClick={handleLogout}>Log Out</button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="btn-reset" onClick={handleLogin}>Log In</button>
+                <button type="button" className="btn-ask" onClick={handleLogin}>Sign Up</button>
+              </>
+            )}
           </div>
         </div>
       </header>

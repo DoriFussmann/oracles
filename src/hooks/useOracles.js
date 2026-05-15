@@ -27,6 +27,32 @@ export function useOracles() {
     setOracles(prev => ({ ...prev, [id]: { ...prev[id], enabled: !prev[id].enabled } }))
   }, [])
 
+  const isolateOracle = useCallback((id) => {
+    setOracles(prev => {
+      const next = { ...prev }
+      Object.keys(next).forEach(key => {
+        next[key] = { ...next[key], enabled: key === id }
+      })
+      return next
+    })
+  }, [])
+
+  const baselineAll = useCallback((draftText) => {
+    setOracles(prev => {
+      const next = { ...prev }
+      Object.keys(next).forEach(key => {
+        if (next[key].enabled) {
+          next[key] = {
+            ...next[key],
+            status: 'idle', // Ready to ask again
+            messages: [...next[key].messages, { role: 'user', content: `[BASELINE ESTABLISHED]:\n${draftText}` }]
+          }
+        }
+      })
+      return next
+    })
+  }, [])
+
   const askAll = useCallback(async (question) => {
     // Reset all enabled oracles to loading, append user message
     setOracles(prev => {
@@ -115,5 +141,5 @@ export function useOracles() {
     }
   })
 
-  return { oracles, isRunning, allDone, responses, askAll, reset, setModel, toggleEnabled }
+  return { oracles, isRunning, allDone, responses, askAll, reset, setModel, toggleEnabled, isolateOracle, baselineAll }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ORACLE_CONFIGS } from '../utils/models'
 
-export function OracleCard({ oracleId, state, onModelChange }) {
+export function OracleCard({ oracleId, state, onModelChange, onIsolate }) {
   const config = ORACLE_CONFIGS.find(o => o.id === oracleId)
   const [expanded, setExpanded] = useState(false)
 
@@ -82,12 +82,20 @@ export function OracleCard({ oracleId, state, onModelChange }) {
           </div>
           
           {state.metrics && (
-            <div className="oracle-metrics-inline">
-              <span>{state.metrics.inputTokens} In / {state.metrics.outputTokens} Out</span>
-              <span className="sep">·</span>
-              <span>{state.metrics.totalTime >= 1000 ? (state.metrics.totalTime/1000).toFixed(1) + 's' : state.metrics.totalTime + 'ms'}</span>
-              <span className="sep">·</span>
-              <span>Cost: ${(state.metrics.cost || 0).toFixed(4)}</span>
+            <div className="oracle-metrics-inline" style={{ justifyContent: 'space-between' }}>
+              <div>
+                <span>{state.metrics.inputTokens} In / {state.metrics.outputTokens} Out</span>
+                <span className="sep">·</span>
+                <span>{state.metrics.totalTime >= 1000 ? (state.metrics.totalTime/1000).toFixed(1) + 's' : state.metrics.totalTime + 'ms'}</span>
+                <span className="sep">·</span>
+                <span>Cost: ${(state.metrics.cost || 0).toFixed(4)}</span>
+              </div>
+              <button 
+                className="btn-minimal" 
+                onClick={(e) => { e.stopPropagation(); onIsolate(oracleId); }}
+              >
+                Branch to 1:1
+              </button>
             </div>
           )}
         </div>

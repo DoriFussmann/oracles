@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudge }) {
+export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudge, onBaseline }) {
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -23,7 +23,7 @@ export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudg
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
-      if (line.startsWith('## Synthesis Draft')) {
+      if (line.startsWith('## Full Summary')) {
         mode = 'draft'
         continue
       }
@@ -46,7 +46,7 @@ export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudg
       <div className="oracle-panel-header" onClick={() => judgeStatus === 'success' && setExpanded(!expanded)}>
         <div className="oracle-panel-title">
           <div className="synthesizer-icon-minimal">✦</div>
-          <span className="oracle-name">Working Draft Synthesis</span>
+          <span className="oracle-name">LLMs Summary</span>
           <div className={`oracle-status-dot oracle-status-dot--${judgeStatus}`} />
         </div>
 
@@ -78,9 +78,14 @@ export function JudgePanel({ allDone, judgeStatus, judgeText, judgeError, onJudg
           </div>
           <div className="oracle-metrics-inline" style={{ justifyContent: 'space-between' }}>
             <span>Synthesized from all oracles</span>
-            <button className="btn-minimal" onClick={handleCopy}>
-              {copied ? '✓ Copied' : 'Copy Draft'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-minimal" onClick={(e) => { e.stopPropagation(); onBaseline(judgeText); }}>
+                Use as Baseline
+              </button>
+              <button className="btn-minimal" onClick={handleCopy}>
+                {copied ? '✓ Copied' : 'Copy Draft'}
+              </button>
+            </div>
           </div>
         </div>
       )}
